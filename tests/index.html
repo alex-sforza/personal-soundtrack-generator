@@ -4,32 +4,52 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Soundtrack Engine — Test Lab</title>
 <style>
-body{font-family:system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:32px;background:#f5f2ed;color:#241f24}h1{margin-bottom:4px}.sub{opacity:.65}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:24px 0}.card{background:white;border:1px solid #ddd6d0;border-radius:16px;padding:20px;box-shadow:0 4px 18px #0000000b}label{display:block;margin:10px 0 4px;font-weight:600}select,input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:9px;background:#fff}button{border:0;border-radius:10px;padding:11px 16px;background:#241f24;color:white;cursor:pointer;margin-top:12px}.result{padding:12px 0;border-bottom:1px solid #eee}.score{font-size:.85em;opacity:.65}.error{color:#9b1c31;background:#fff0f2;padding:12px;border-radius:10px}.bar{height:8px;background:#eee;border-radius:9px;overflow:hidden;margin:5px 0 10px}.fill{height:100%;background:#555}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;margin:2px;font-size:.8em}
+body{font-family:system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:32px;background:#f5f2ed;color:#241f24}h1{margin-bottom:4px}.sub{opacity:.65}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:24px 0}.card{background:white;border:1px solid #ddd6d0;border-radius:16px;padding:20px;box-shadow:0 4px 18px #0000000b}label{display:block;margin:10px 0 4px;font-weight:600}select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:9px;background:#fff}button{border:0;border-radius:10px;padding:11px 16px;background:#241f24;color:white;cursor:pointer;margin-top:12px}.result{padding:12px 0;border-bottom:1px solid #eee}.score{font-size:.85em;opacity:.65}.error{color:#9b1c31;background:#fff0f2;padding:12px;border-radius:10px;margin-top:16px}.status{padding:10px;border-radius:10px;background:#f0eee9;margin-top:12px;font-size:.9em}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;margin:2px;font-size:.8em}.small{font-size:.85em;opacity:.65}.ok{color:#356b43}.warn{color:#8a5b16}
 </style></head>
 <body>
-<h1>🎧 Soundtrack Engine Test Lab</h1><div class="sub">Внутренняя страница для настройки алгоритма. Ничего не меняет в основном генераторе.</div>
+<h1>🎧 Soundtrack Engine Test Lab</h1>
+<div class="sub">Внутренняя страница для настройки алгоритма. Ничего не меняет в основном генераторе.</div>
+<div id="status" class="status">Загрузка базы…</div>
 <div class="grid">
 <section class="card"><h2>Один персонаж</h2><label>Тестовый сценарий</label><select id="singleCase"></select><button onclick="runSingle()">Запустить тест</button><div id="singleOut"></div></section>
 <section class="card"><h2>Два персонажа</h2><label>Тестовый сценарий</label><select id="pairCase"></select><label>Фокус</label><select id="focus"><option value="connection">Они сами</option><option value="bond" selected>Их связь</option><option value="events">То, что с ними происходит</option><option value="conflict">Их конфликт</option></select><button onclick="runPair()">Запустить тест</button><div id="pairOut"></div></section>
 </div>
-<div class="card"><h2>Сравнение профилей</h2><p>Этот блок показывает, какие эмоциональные параметры получил выбранный сценарий.</p><div id="profileOut">Выберите тест выше.</div></div>
+<div class="card"><h2>Профиль, который получил алгоритм</h2><p class="small">Здесь мы смотрим не только результат, но и то, какие параметры реально дошли до движка.</p><div id="profileOut">Запустите любой тест.</div></div>
 <script src="../js/soundtrack-engine.js"></script>
 <script>
 let data=null, music=[], rules={};
-const singleEl=document.getElementById('singleCase'), pairEl=document.getElementById('pairCase');
+const singleEl=document.getElementById('singleCase'), pairEl=document.getElementById('pairCase'), statusEl=document.getElementById('status');
+const SOURCE_FILES=['alternative','gothic-industrial','modern-heavy','female-alternative','classic-rock','russian-rock','dark-folk','soundtracks','anime','metal-rock'];
+const CATEGORY_PROFILES={
+ alternative:{tags:['alternative','melancholy','rebellion','night'],emotions:{drama:6,romance:4,danger:5,mystery:5,hope:4,loneliness:5,nostalgia:5,chaos:5,power:4,freedom:6,melancholy:6,tenderness:4,rebellion:7,darkness:6,epic:4,energy:6}},
+ 'gothic-industrial':{tags:['gothic','industrial','darkness','danger','night'],emotions:{drama:7,romance:5,danger:7,mystery:7,hope:2,loneliness:7,nostalgia:5,chaos:7,power:6,freedom:4,melancholy:7,tenderness:3,rebellion:6,darkness:9,epic:6,energy:8}},
+ 'modern-heavy':{tags:['heavy','danger','rebellion','energy'],emotions:{drama:7,romance:3,danger:8,mystery:4,hope:3,loneliness:4,nostalgia:3,chaos:8,power:8,freedom:5,melancholy:4,tenderness:2,rebellion:8,darkness:7,epic:6,energy:9}},
+ 'female-alternative':{tags:['alternative','intimate','melancholy','identity'],emotions:{drama:7,romance:5,danger:4,mystery:6,hope:5,loneliness:6,nostalgia:7,chaos:4,power:5,freedom:6,melancholy:8,tenderness:6,rebellion:6,darkness:6,epic:4,energy:5}},
+ 'classic-rock':{tags:['classic-rock','freedom','rebellion','energy'],emotions:{drama:6,romance:4,danger:5,mystery:3,hope:6,loneliness:3,nostalgia:7,chaos:5,power:7,freedom:9,melancholy:4,tenderness:4,rebellion:8,darkness:4,epic:6,energy:8}},
+ 'russian-rock':{tags:['russian-rock','melancholy','philosophy','nostalgia'],emotions:{drama:8,romance:4,danger:4,mystery:6,hope:4,loneliness:8,nostalgia:9,chaos:5,power:5,freedom:7,melancholy:9,tenderness:5,rebellion:7,darkness:6,epic:5,energy:5}},
+ 'dark-folk':{tags:['dark-folk','folk','nature','mystery','nostalgia'],emotions:{drama:6,romance:4,danger:5,mystery:9,hope:5,loneliness:7,nostalgia:8,chaos:3,power:4,freedom:7,melancholy:8,tenderness:5,rebellion:3,darkness:7,epic:7,energy:4}},
+ soundtracks:{tags:['soundtrack','cinematic','epic','fate'],emotions:{drama:8,romance:4,danger:6,mystery:8,hope:7,loneliness:5,nostalgia:5,chaos:5,power:6,freedom:5,melancholy:5,tenderness:5,rebellion:3,darkness:6,epic:10,energy:7}},
+ anime:{tags:['anime','emotional','adventure','fate'],emotions:{drama:8,romance:5,danger:6,mystery:6,hope:8,loneliness:5,nostalgia:5,chaos:7,power:7,freedom:7,melancholy:5,tenderness:6,rebellion:7,darkness:5,epic:9,energy:9}},
+ 'metal-rock':{tags:['metal','darkness','danger','rebellion'],emotions:{drama:8,romance:3,danger:9,mystery:5,hope:3,loneliness:5,nostalgia:3,chaos:9,power:9,freedom:6,melancholy:5,tenderness:2,rebellion:9,darkness:9,epic:8,energy:10}}
+};
 function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+async function getJson(url){const r=await fetch(url);if(!r.ok)throw new Error(r.status+' '+url);return r.json();}
 async function load(){
  try{
-  const [tc,m,cr,rr]=await Promise.all([fetch('./test-cases.json'),fetch('../data/music.json'),fetch('../data/character-rules.json').catch(()=>null),fetch('../data/relationship-scoring.json')]);
-  data=await tc.json(); music=await m.json(); rules=await rr.json();
-  if(Array.isArray(music.tracks)) music=music.tracks;
+  data=await getJson('./test-cases.json');
+  rules=await getJson('../data/relationship-scoring.json');
+  const loaded=await Promise.all(SOURCE_FILES.map(async category=>{const raw=await getJson('../data/music/'+category+'.json');const obj=typeof raw.content==='string'?JSON.parse(raw.content):raw;return (obj.tracks||[]).map(t=>({...t,category,layer:category,...(CATEGORY_PROFILES[category]||{})});}));
+  music=loaded.flat();
   data.cases.filter(x=>x.type==='single').forEach((x,i)=>singleEl.add(new Option(x.description||x.id,i)));
   data.cases.filter(x=>x.type==='pair').forEach((x,i)=>pairEl.add(new Option(x.description||x.id,i)));
- }catch(e){document.body.insertAdjacentHTML('beforeend','<div class="error">Не удалось загрузить данные: '+esc(e.message)+'</div>')}
+  statusEl.innerHTML='<span class="ok">✓ Загружено '+music.length+' треков · '+SOURCE_FILES.length+' музыкальных слоёв · '+data.cases.length+' тестов</span>';
+ }catch(e){statusEl.innerHTML='<span class="warn">⚠ Ошибка загрузки: '+esc(e.message)+'</span>';console.error(e);}
 }
-function render(items,mode){return items.map((x,i)=>{let s=x.song||{};return `<div class="result"><b>${i+1}. ${esc(s.title||s.name||'Без названия')}</b> — ${esc(s.artist||'Неизвестный исполнитель')}<div class="score">Итоговый score: ${(x.adjustedScore??x.score).toFixed(3)} · ${esc(x.explanation||'')}</div></div>`}).join('')}
-function showProfile(p){let d=p.dimensions||p;document.getElementById('profileOut').innerHTML=Object.entries(d).map(([k,v])=>`<span class="pill">${esc(k)} ${Number(v).toFixed(1)}</span>`).join('')}
-function runSingle(){let c=data.cases.filter(x=>x.type==='single')[singleEl.value];let character={sliders:{}}; (c.expectedSignals||[]).forEach((x,i)=>character.sliders[['drama','mystery','danger','loneliness','nostalgia','energy','freedom','hope'][i%8]]=6+i%5); let out=SoundtrackEngine.generateSingle(music,character,rules.characterRules||rules,5); document.getElementById('singleOut').innerHTML=render(out,'single'); showProfile(SoundtrackEngine.buildCharacterProfile(character,rules.characterRules||rules));}
-function runPair(){let c=data.cases.filter(x=>x.type==='pair')[pairEl.value];let a={sliders:{drama:6,energy:5,mystery:6,loneliness:5,hope:5},role:'character-a'},b={sliders:{drama:5,energy:6,mystery:5,loneliness:4,hope:6},role:'character-b'};let out=SoundtrackEngine.generatePair(music,a,b,{relationshipType:c.relationship,trajectory:c.trajectory,focus:document.getElementById('focus').value},rules.characterRules||rules,rules,5);document.getElementById('pairOut').innerHTML=render(out,'pair');showProfile(SoundtrackEngine.buildPairProfile(a,b,{relationshipType:c.relationship,trajectory:c.trajectory},rules));}
+function render(items){return items.map((x,i)=>{let s=x.song||{};return `<div class="result"><b>${i+1}. ${esc(s.title||s.name||'Без названия')}</b> — ${esc(s.artist||'Неизвестный исполнитель')}<div class="score">Score: ${(x.adjustedScore??x.score).toFixed(3)} · ${esc(x.explanation||'')}</div></div>`}).join('');}
+function showProfile(p){let d=p.dimensions||p;document.getElementById('profileOut').innerHTML=Object.entries(d).map(([k,v])=>`<span class="pill">${esc(k)} ${Number(v).toFixed(1)}</span>`).join('');}
+function singleInput(c){const s={};const map={drama:6,mystery:6,danger:5,loneliness:7,nostalgia:7,energy:4,freedom:5,hope:4,melancholy:8,romance:3,darkness:7};(c.expectedSignals||[]).forEach((x,i)=>{const k=Object.keys(map)[i%Object.keys(map).length];s[k]=map[k];});return {sliders:s};}
+function pairInput(c){return [{sliders:{drama:6,energy:5,mystery:5,loneliness:4,hope:6,nostalgia:6,freedom:7}},{sliders:{drama:5,energy:5,mystery:6,loneliness:4,hope:7,nostalgia:6,freedom:7}}];}
+function runSingle(){try{const c=data.cases.filter(x=>x.type==='single')[singleEl.value];const character=singleInput(c);const out=SoundtrackEngine.generateSingle(music,character,{},5);document.getElementById('singleOut').innerHTML='<h3>Результат</h3>'+render(out);showProfile(SoundtrackEngine.buildCharacterProfile(character,{}));}catch(e){document.getElementById('singleOut').innerHTML='<div class="error">'+esc(e.stack||e.message)+'</div>';}}
+function runPair(){try{const c=data.cases.filter(x=>x.type==='pair')[pairEl.value];const [a,b]=pairInput(c);const out=SoundtrackEngine.generatePair(music,a,b,{relationshipType:c.relationship,trajectory:c.trajectory,focus:document.getElementById('focus').value}, {},rules,5);document.getElementById('pairOut').innerHTML='<h3>Результат</h3>'+render(out);showProfile(SoundtrackEngine.buildPairProfile(a,b,{relationshipType:c.relationship,trajectory:c.trajectory},rules));}catch(e){document.getElementById('pairOut').innerHTML='<div class="error">'+esc(e.stack||e.message)+'</div>';}}
 load();
 </script></body></html>
