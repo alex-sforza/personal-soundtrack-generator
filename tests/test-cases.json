@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "cases": [
+    {"id":"quiet-vampire","type":"single","description":"Вампир, аристократ, врач; скрывает природу; пытается начать новую жизнь; высокая меланхолия, низкая энергия.","expectedSignals":["gothic","melancholy","loneliness","night","identity","quiet"]},
+    {"id":"cursed-rugaru","type":"single","description":"Ругару, охотник, потерял контроль над проклятием; высокая опасность и драма.","expectedSignals":["beast","hunger","danger","conflict","dark","energy"]},
+    {"id":"kelpie-outsider","type":"single","description":"Келпи, изгнанник, работает в сфере услуг, пытается начать новую жизнь; высокая свобода, мистика и умеренная энергия.","expectedSignals":["water","mystical","outsider","freedom","new-life"]},
+    {"id":"knower-medium","type":"single","description":"Знающий-медиум, архивист; расследует смерть близкого человека; высокая ностальгия, одиночество и мистика.","expectedSignals":["spirits","memory","investigation","loss","mystery","nostalgia"]},
+    {"id":"friendship","type":"pair","description":"Два персонажа — лучшие друзья; высокая взаимная поддержка, стабильность и ностальгия.","relationship":"friends","trajectory":"no_change","focus":"bond","expectedSignals":["friendship","trust","warmth","loyalty","nostalgia"],"mustNotInfer":["romance"]},
+    {"id":"enemies-to-allies","type":"pair","description":"Вампир и охотник; сначала враги, затем вынужденные союзники; высокая опасность и недоверие.","relationship":"forced_alliance","trajectory":"enemies_to_allies","focus":"events","expectedSignals":["danger","mistrust","tension","conflict","trust"],"mustNotInfer":["romance"]},
+    {"id":"siblings","type":"pair","description":"Брат и сестра; сильная привязанность, но старый конфликт; возможное примирение.","relationship":"sibling","trajectory":"alienation_to_reunion","focus":"connection","expectedSignals":["family","loyalty","nostalgia","tenderness","hope"],"mustNotInfer":["romance"]},
+    {"id":"romantic-chaos","type":"pair","description":"Два персонажа в сложной романтической связи; сильное притяжение, зависимость и хаос.","relationship":"complicated_attachment","trajectory":"forced_allies_to_true_bond","focus":"bond","expectedSignals":["attraction","dependence","chaos","tenderness","danger"]}
+  ],
+  "acceptance_criteria": [
+    "Single-character ranking reacts materially to emotional sliders.",
+    "Changing race or role changes ranking without fully determining it.",
+    "Pair ranking is not a simple average of character profiles.",
+    "Relationship type and trajectory materially affect pair ranking.",
+    "Romance is never inferred solely from attraction or emotional intensity.",
+    "Final results contain artist diversity and genre diversity.",
+    "Synopsis tone follows the resulting story profile."
+  ]
+}
