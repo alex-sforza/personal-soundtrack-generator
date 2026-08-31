@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "notes": "Музыкальная библиотека генератора. Параметры 0–10 используются для сюжетного подбора, а не являются объективными музыкальными оценками.",
+  "scales": ["drama", "romance", "danger", "mystery", "hope", "chaos", "loneliness", "nostalgia", "conflict", "energy"],
+  "tracks": []
+}
