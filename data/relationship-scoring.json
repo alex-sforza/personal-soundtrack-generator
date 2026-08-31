@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "purpose": "Scoring model for a shared soundtrack between any two characters; romance is optional.",
+  "principle": "Do not average two characters into one. Build a relationship profile from the interaction between them, then use character profiles as secondary context.",
+  "weights": {
+    "relationship_profile": 0.40,
+    "emotional_intersection": 0.25,
+    "character_contrast": 0.15,
+    "trajectory": 0.10,
+    "individual_context": 0.10
+  },
+  "focus_modes": [
+    {"id":"connection","label":"Они сами","weights":{"relationship_profile":0.50,"emotional_intersection":0.25,"character_contrast":0.10,"trajectory":0.05,"individual_context":0.10}},
+    {"id":"bond","label":"Их связь","weights":{"relationship_profile":0.60,"emotional_intersection":0.20,"character_contrast":0.10,"trajectory":0.05,"individual_context":0.05}},
+    {"id":"events","label":"То, что с ними происходит","weights":{"relationship_profile":0.35,"emotional_intersection":0.20,"character_contrast":0.10,"trajectory":0.25,"individual_context":0.10}},
+    {"id":"conflict","label":"Их конфликт","weights":{"relationship_profile":0.45,"emotional_intersection":0.10,"character_contrast":0.25,"trajectory":0.15,"individual_context":0.05}}
+  ],
+  "relationship_axes": {
+    "attraction_repulsion": "attraction <-> repulsion",
+    "trust_mistrust": "trust <-> mistrust",
+    "tenderness_cruelty": "tenderness <-> cruelty",
+    "stability_chaos": "stability <-> chaos",
+    "equality_power": "equality <-> power",
+    "freedom_dependence": "freedom <-> dependence"
+  },
+  "relationship_types": {
+    "family": ["trust","loyalty","nostalgia","tenderness","conflict"],
+    "friends": ["trust","warmth","loyalty","freedom","nostalgia"],
+    "allies": ["trust","duty","stability","conflict"],
+    "rivals": ["repulsion","competition","power","energy","chaos"],
+    "enemies": ["repulsion","danger","cruelty","power","chaos"],
+    "forced_alliance": ["mistrust","danger","conflict","dependence","tension"],
+    "mentor_student": ["trust","duty","growth","power","tenderness"],
+    "protector_protected": ["trust","duty","dependence","tenderness","danger"],
+    "hunter_prey": ["repulsion","danger","power","obsession","chaos"],
+    "former_allies": ["nostalgia","mistrust","conflict","loss","tension"],
+    "former_close": ["nostalgia","attraction","loss","mistrust","tenderness"],
+    "romantic": ["attraction","tenderness","dependence","trust","danger"],
+    "unrequited": ["attraction","longing","loneliness","tenderness","loss"],
+    "complicated_attachment": ["attraction","dependence","mistrust","chaos","tenderness"],
+    "debt_contract": ["power","dependence","duty","mistrust","danger"],
+    "shared_secret": ["trust","mistrust","dependence","tension","nostalgia"],
+    "shared_curse": ["dependence","danger","pain","fate","conflict"],
+    "creator_creation": ["power","dependence","identity","tenderness","conflict"],
+    "fated": ["attraction","fate","dependence","danger","destiny"],
+    "sibling": ["trust","loyalty","tenderness","conflict","nostalgia"]
+  },
+  "trajectory_modifiers": {
+    "strangers_to_friends": ["warmth","trust","growth","hope"],
+    "strangers_to_enemies": ["conflict","danger","repulsion","chaos"],
+    "enemies_to_allies": ["mistrust","tension","danger","trust","growth"],
+    "rivals_to_allies": ["competition","energy","respect","trust"],
+    "friends_to_enemies": ["loss","betrayal","nostalgia","cruelty"],
+    "trust_to_betrayal": ["trust","loss","mistrust","pain"],
+    "attachment_to_freedom": ["dependence","conflict","freedom","loss"],
+    "alienation_to_reunion": ["loneliness","nostalgia","hope","tenderness"],
+    "protector_to_protected": ["duty","tenderness","danger","dependence"],
+    "hunter_to_hunted": ["danger","power","chaos","obsession"],
+    "mentor_to_equal": ["growth","respect","power","trust"],
+    "forced_allies_to_true_bond": ["mistrust","danger","trust","tenderness"],
+    "no_change": ["stability","loyalty","continuity"]
+  },
+  "scoring": {
+    "intersection": "For each emotional dimension, compare both character values and reward dimensions present in both.",
+    "contrast": "For each dimension, reward strong opposition when the selected focus is conflict, tension, rivalry, or transformation.",
+    "relationship": "Map relationship type and its six-axis profile into song tags and emotional dimensions.",
+    "trajectory": "Map the direction of the relationship to transition, loss, growth, betrayal, danger, hope, or reconciliation tags.",
+    "character_context": "Use race, role, sphere, current arc and future arc only as secondary modifiers.",
+    "diversity": "After ranking, penalize repeated artists, near-duplicate genres and songs with almost identical emotional profiles.",
+    "romance_guard": "Never infer romance from attraction alone. Attraction may represent fascination, rivalry, obsession, danger, or supernatural pull. Romantic framing requires an explicitly romantic relationship type or trajectory."
+  },
+  "output_modes": [
+    {"id":"their_song","label":"Их песня","result_count":1,"purpose":"One track that best represents the relationship itself."},
+    {"id":"their_story","label":"Их история","result_count":1,"purpose":"One track representing the relationship arc from beginning to possible outcome."},
+    {"id":"their_conflict","label":"Их противостояние","result_count":1,"purpose":"One track emphasizing tension, opposition, danger and power."}
+  ],
+  "synopsis_fields": ["opening","turning_point","escalation","ending"],
+  "privacy_note": "Use only public generator archetypes and generic relationship categories. Do not encode private player lore, private families, unpublished AUs or specific personal story references."
+}
