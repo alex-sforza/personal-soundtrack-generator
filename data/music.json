@@ -1,6 +1,17 @@
 {
-  "version": 1,
-  "notes": "Музыкальная библиотека генератора. Параметры 0–10 используются для сюжетного подбора, а не являются объективными музыкальными оценками.",
-  "scales": ["drama", "romance", "danger", "mystery", "hope", "chaos", "loneliness", "nostalgia", "conflict", "energy"],
-  "tracks": []
+  "version": 2,
+  "track_count": 500,
+  "notes": "500 curated reference tracks. Category is a first-pass matching signal; detailed emotional and character tags will be added in the scoring layer.",
+  "sources": [
+    "data/music/alternative.json",
+    "data/music/gothic-industrial.json",
+    "data/music/modern-heavy.json",
+    "data/music/female-alternative.json",
+    "data/music/classic-rock.json",
+    "data/music/russian-rock.json",
+    "data/music/dark-folk.json",
+    "data/music/soundtracks.json",
+    "data/music/anime.json",
+    "data/music/metal-rock.json"
+  ]
 }
