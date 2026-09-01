@@ -1,6 +1,6 @@
-/* Personal Soundtrack Generator — scoring engine v3
+/* Personal Soundtrack Generator — scoring engine v4
  * Browser-first, deterministic, no AI/API required.
- * Pair mode treats two characters, relationship, trajectory and focus separately.
+ * Pair mode treats two characters, relationship, trajectory, focus and semantic story stages separately.
  */
 const DEFAULT_DIMENSIONS=['drama','romance','danger','mystery','hope','loneliness','nostalgia','chaos','power','freedom','melancholy','tenderness','rebellion','darkness','epic','energy'];
 const clamp=(v,min=0,max=10)=>Math.max(min,Math.min(max,Number(v)||0));
@@ -19,12 +19,11 @@ function resolveModifier(modifiers,id,aliases={}){if(!id)return null;if(modifier
 const NON_ROMANTIC_REL=new Set(['sibling','siblings','family','friends','best_friends','forced_alliance','allies','rivals','enemies','former_allies','mutual_dislike','duty','oath','contract','debtor_creditor','protector_protected','shared_secret','shared_curse','hunter_prey']);
 const ROMANTIC_REL=new Set(['lovers','unrequited_love','mutual_attraction','complicated_attachment','enemies_to_lovers']);
 
-/* Semantic vocabulary is deliberately separate from emotional dimensions. */
 const REL_SEMANTICS={
- sibling:{positive:['brother','sister','sisters','brothers','family','home','blood','childhood','together','kin','relative','родн','брат','сестр','семь','дом','кров','детств'],negative:['love','lover','kiss','desire','crush','sexy','baby','darling']},
- friends:{positive:['friend','friends','together','best','youth','road','forever','side','buddy','друз','вместе','товарищ'],negative:['lover','kiss','desire','sexy']},
- enemies:{positive:['enemy','enemies','war','fight','battle','hate','revenge','kill','blood','войн','враг','битв','ненав','месть','убий'],negative:['tender','home','friendship']},
- forced_alliance:{positive:['together','united','stand','team','allies','ally','survive','war','fight','союз','вместе','команд','выжив','войн'],negative:[]},
+ sibling:{positive:['brother','sister','sisters','brothers','family','home','blood','childhood','together','kin','relative','родн','брат','сестр','семь','дом','кров','детств'],negative:['love','lover','kiss','desire','crush','sexy','baby','darling','romance','любов','целу','желан','романс']},
+ friends:{positive:['friend','friends','together','best','youth','road','forever','side','buddy','друз','вместе','товарищ'],negative:['lover','kiss','desire','sexy','romance','любов','целу','желан']},
+ enemies:{positive:['enemy','enemies','war','fight','battle','hate','revenge','kill','blood','войн','враг','битв','ненав','месть','убий'],negative:['tender','home','friendship','любов','целу']},
+ forced_alliance:{positive:['together','united','stand','team','allies','ally','survive','war','fight','союз','вместе','команд','выжив','войн'],negative:['lover','kiss','romance','desire','любов','целу','романс']},
  lovers:{positive:['love','lover','lovers','kiss','heart','desire','romance','beautiful','baby','darling','любов','целу','сердц','желан'],negative:[]},
  generic:{positive:['together','story','time','road','night','memory'],negative:[]}
 };
@@ -51,11 +50,22 @@ const STAGE_SEMANTICS={
  'Вместе':['together','forever','friend','friends','вместе','навсег','друз'],
  'Связь':['together','bond','connection','heart','blood','вместе','связ','сердц','кров']
 };
-function textOfTrack(track){return `${track.title||''} ${track.artist||''} ${(track.tags||[]).join(' ')}`.toLowerCase();}
+const STAGE_NEGATIVES={
+ 'Общее прошлое':['sexy','desire','romance','kiss','убий','войн'],
+ 'Свои люди':['sexy','desire','romance','kiss','lover'],
+ 'Выбор друг друга':['sexy','desire','romance','kiss','lover'],
+ 'Вместе':['sexy','desire','romance','kiss','lover'],
+ 'Домой':['sexy','desire','romance','kiss','lover'],
+ 'Возвращение':['sexy','desire','romance','kiss','lover'],
+ 'Доверие':['sexy','desire','romance','kiss','lover'],
+ 'Настоящий союз':['sexy','desire','romance','kiss','lover'],
+ 'После войны':['sexy','desire','romance','kiss','lover']
+};
+function textOfTrack(track){return `${track.title||''} ${track.artist||''} ${(track.tags||[]).join(' ')} ${(track.semanticTags||[]).join(' ')} ${(track.themes||[]).join(' ')} ${(track.relationshipTags||[]).join(' ')} ${(track.storyRoles||[]).join(' ')}`.toLowerCase();}
 function semanticHits(track,words){const text=textOfTrack(track);return words.reduce((n,w)=>n+(text.includes(w.toLowerCase())?1:0),0);}
 function relationshipKey(type){if(['sibling','siblings','family'].includes(type))return'sibling';if(['friends','best_friends'].includes(type))return'friends';if(['enemies','rivals','mutual_dislike'].includes(type))return'enemies';if(['forced_alliance','allies','former_allies'].includes(type))return'forced_alliance';if(ROMANTIC_REL.has(type))return'lovers';return'generic';}
-function relationshipSemanticScore(track,type){const sem=REL_SEMANTICS[relationshipKey(type)]||REL_SEMANTICS.generic;return semanticHits(track,sem.positive)*5-semanticHits(track,sem.negative)*12;}
-function stageSemanticScore(track,stageName){return semanticHits(track,STAGE_SEMANTICS[stageName]||[])*3;}
+function relationshipSemanticScore(track,type){const sem=REL_SEMANTICS[relationshipKey(type)]||REL_SEMANTICS.generic;return semanticHits(track,sem.positive)*7-semanticHits(track,sem.negative)*18;}
+function stageSemanticScore(track,stageName){const positive=semanticHits(track,STAGE_SEMANTICS[stageName]||[]),negative=semanticHits(track,STAGE_NEGATIVES[stageName]||[]);return positive*5-negative*14;}
 
 function buildRelationshipProfile(a,b,type,trajectory,scoring){const d=scoring.dimensions||DEFAULT_DIMENSIONS,p=emptyProfile(d);addProfile(p,resolveModifier(scoring.relationship_modifiers,type,REL_ALIASES),1.35);const tr=resolveModifier(scoring.trajectory_modifiers,trajectory,TRAJECTORY_ALIASES);if(Array.isArray(tr))for(const tag of tr)if(d.includes(tag))p[tag]=(p[tag]||0)+1.25;else addProfile(p,tr,1.1);const pa=buildCharacterProfile(a,scoring),pb=buildCharacterProfile(b,scoring);for(const k of d){p[k]+=Math.min(pa[k],pb[k])*.14;if(['drama','danger','chaos','power','darkness','rebellion'].includes(k))p[k]+=Math.abs(pa[k]-pb[k])*.05;}return normalizeProfile(p,d);}
 function buildStoryProfile(character,scoring){return buildCharacterProfile(character,scoring);}
@@ -76,7 +86,7 @@ const TRAJECTORY_STAGE={
  enemies_to_allies:[{danger:1},{mystery:1,drama:1},{danger:2,epic:1},{hope:1,tenderness:1},{hope:2,epic:1}],
  forced_allies_to_true_bond:[{danger:1},{mystery:1},{drama:1,danger:1},{tenderness:1,hope:1},{hope:2,tenderness:1}],
  friends_to_enemies:[{nostalgia:1},{drama:1},{danger:2,darkness:1},{melancholy:1,drama:1},{freedom:1,melancholy:1}],
- rivalry_to_respect:[{rebellion:1},{danger:1,energy:1},{power:1,drama:1},{hope:1,tenderness:1},{respect:1,hope:1}],
+ rivalry_to_respect:[{rebellion:1},{danger:1,energy:1},{power:1,drama:1},{hope:1,tenderness:1},{hope:1,freedom:1}],
  loss_to_recovery:[{nostalgia:1},{melancholy:2},{drama:1.5},{hope:1.5},{hope:2,tenderness:1}],
  redemption:[{darkness:1},{drama:1},{melancholy:1},{hope:2},{hope:3,freedom:1}],
  descent:[{mystery:1},{darkness:1},{danger:2},{chaos:2,darkness:1},{darkness:2,melancholy:1}]
@@ -90,5 +100,31 @@ function diversityPenalty(track,selected,index){let p=index*.5;for(const prev of
 function rankTracks(tracks,target,scoring,options={}){const limit=options.limit||5,ranked=tracks.map(t=>({...t,score:scoreTrack(t,target,scoring,options)})).sort((a,b)=>b.score-a.score),selected=[],pool=[...ranked];while(selected.length<limit&&pool.length){let bi=0,bs=-Infinity;for(let i=0;i<pool.length;i++){const s=pool[i].score-diversityPenalty(pool[i],selected,selected.length);if(s>bs){bs=s;bi=i;}}const chosen=pool.splice(bi,1)[0],penalty=diversityPenalty(chosen,selected,selected.length);selected.push({...chosen,finalScore:chosen.score-penalty});}return selected;}
 function rankArc(tracks,arc,scoring,options={}){const used=[],result=[];for(const stage of arc){const opts={...options,limit:Math.max(12,options.stagePool||12),nonRomantic:options.nonRomantic,relationshipType:options.relationshipType,stageName:stage.name};const ranked=rankTracks(tracks,stage.profile,scoring,opts).filter(t=>!used.some(u=>u.title===t.title&&u.artist===t.artist));const chosen=ranked[0];if(chosen){used.push(chosen);result.push({...chosen,stage:stage.stage,stageName:stage.name,stageProfile:stage.profile});}}return result.slice(0,options.limit||5);}
 function generatePersonalSoundtrack(character,tracks,scoring,options={}){const target=buildStoryProfile(character,scoring);return{targetProfile:target,tracks:rankTracks(tracks,target,scoring,options)};}
-function generateSharedSoundtrack(a,b,tracks,scoring,options={}){const focus=options.focus||'connection',type=options.relationshipType,trajectory=options.trajectory,target=buildPairTarget(a,b,type,trajectory,scoring,focus),arc=buildPairArc(a,b,type,trajectory,scoring,focus),nonRomantic=NON_ROMANTIC_REL.has(type)&&trajectory!=='enemies_to_lovers',tracksOut=rankArc(tracks,arc,scoring,{...options,nonRomantic,relationshipType:type,limit:options.limit||5});return{focus,relationshipType:type,trajectory,targetProfile:target,arc:arc.map(x=>({stage:x.stage,name:x.name,profile:x.profile})),tracks:tracksOut};}
-window.SoundtrackEngine={buildCharacterProfile,buildStoryProfile,buildRelationshipProfile,buildPairTarget,buildPairArc,generatePersonalSoundtrack,generateSharedSoundtrack,rankTracks,scoreTrack,normalizeProfile};
+
+/* v4 pair semantics: meaning outranks generic mood. */
+const STAGE_RULES_V4={
+ 'Общее прошлое':{positive:['family','shared_past','childhood','home','memory','nostalgia','blood','родн','семь','детств','прошл','дом'],negative:['romance','romantic','lover','love','kiss','desire','sexy','войн','enemy','конфликт']},
+ 'Свои люди':{positive:['friendship','friend','friends','loyalty','companionship','belonging','together','друз','товарищ','вместе','верност'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Общее безумие':{positive:['adventure','chaos','freedom','fun','youth','road','приключ','хаос','свобод','дорог'],negative:['romance','lover','love','kiss','desire']},
+ 'Проверка':{positive:['loyalty','trust','test','trial','risk','friendship','верност','довер','испыт','риск'],negative:['romance','lover','love','kiss','desire']},
+ 'Выбор друг друга':{positive:['loyalty','commitment','trust','support','friendship','together','выбор','верност','довер','поддерж','вместе'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Вместе':{positive:['friendship','loyalty','companionship','belonging','together','forever','друз','верност','вместе','навсег'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Вынуждены быть рядом':{positive:['forced_alliance','survival','allies','team','together','выжив','союз','команд','вместе'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Недоверие':{positive:['doubt','secret','lie','suspicion','mystery','недовер','тайн','лож','сомн','подозр'],negative:['romance','lover','love','kiss','desire']},
+ 'Общая угроза':{positive:['danger','threat','survival','enemy','war','allies','угроз','опасн','выжив','враг','войн'],negative:['romance','lover','love','kiss','desire']},
+ 'Доверие':{positive:['trust','faith','loyalty','support','believe','довер','вер','верност','поддерж'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Настоящий союз':{positive:['alliance','allies','ally','team','unity','united','loyalty','союз','команд','един','верност'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Домой':{positive:['home','family','homecoming','reunion','belonging','blood','together','дом','семь','возвращ','воссоедин','кров','вместе'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'Возвращение':{positive:['return','reunion','forgive','home','again','together','возвращ','воссоедин','прощ','дом','снов','вместе'],negative:['romance','lover','love','kiss','desire','sexy']},
+ 'После войны':{positive:['peace','home','freedom','recovery','after','survive','мир','дом','свобод','восстанов','после','выжив'],negative:['romance','lover','love','kiss','desire','sexy']}
+};
+function semanticArray(track,key){const v=track?.[key];return Array.isArray(v)?v.map(x=>String(x).toLowerCase()):[];}
+function hasSemantic(track,word){const w=word.toLowerCase();return textOfTrack(track).includes(w)||semanticArray(track,'semanticTags').includes(w)||semanticArray(track,'themes').includes(w)||semanticArray(track,'relationshipTags').includes(w)||semanticArray(track,'storyRoles').includes(w);}
+function semanticRuleScoreV4(track,stageName,relationshipType){const rel=REL_SEMANTICS[relationshipKey(relationshipType)]||REL_SEMANTICS.generic;const stage=STAGE_RULES_V4[stageName]||{};let s=0;s+=semanticHits(track,rel.positive)*9;s-=semanticHits(track,rel.negative)*24;s+=semanticHits(track,stage.positive||[])*9;s-=semanticHits(track,stage.negative||[])*22;return s;}
+function romancePenaltyV4(track,relationshipType){if(!NON_ROMANTIC_REL.has(relationshipType))return 0;const text=textOfTrack(track);const explicit=/(love|lover|lovers|kiss|romance|desire|crush|sexy|do me|#1 crush|любов|целу|романс|желан)/i.test(text);const tags=semanticArray(track,'relationshipTags').concat(semanticArray(track,'themes'));const romanticTag=tags.some(x=>['romance','romantic','lover','love','sexual','romantic_tension','романтика','любовь'].includes(x));return explicit||romanticTag?70:0;}
+function scorePairTrackV4(track,target,scoring,context={}){let score=scoreTrack(track,target,scoring,{...context,nonRomantic:false});score+=semanticRuleScoreV4(track,context.stageName,context.relationshipType);score-=romancePenaltyV4(track,context.relationshipType);if(context.stageName&&STAGE_RULES_V4[context.stageName]?.positive)score+=Math.min(20,semanticHits(track,STAGE_RULES_V4[context.stageName].positive)*3);return score;}
+function rankPairStageV4(tracks,target,scoring,options={}){const ranked=tracks.map(t=>({...t,score:scorePairTrackV4(t,target,scoring,options)})).sort((a,b)=>b.score-a.score);const selected=[];for(const candidate of ranked){if(selected.some(x=>x.title===candidate.title&&x.artist===candidate.artist))continue;let penalty=0;for(const prev of selected){if(prev.artist===candidate.artist)penalty+=90;if(prev.category&&candidate.category&&prev.category===candidate.category)penalty+=2;const a=semanticFingerprint(prev),b=semanticFingerprint(candidate);const overlap=a.filter(x=>b.includes(x)).length;if(overlap>=2)penalty+=14;else if(overlap===1)penalty+=4;}selected.push({...candidate,finalScore:candidate.score-penalty});if(selected.length>=Math.max(18,options.stagePool||18))break;}return selected.sort((a,b)=>b.finalScore-a.finalScore);}
+function rankArcV4(tracks,arc,scoring,options={}){const used=[],result=[];for(const stage of arc){const ranked=rankPairStageV4(tracks,stage.profile,scoring,{...options,stageName:stage.name,relationshipType:options.relationshipType});const available=ranked.filter(t=>!used.some(u=>u.title===t.title&&u.artist===t.artist)&&!used.some(u=>u.artist===t.artist));const chosen=available[0]||ranked.find(t=>!used.some(u=>u.title===t.title&&u.artist===t.artist));if(chosen){used.push(chosen);result.push({...chosen,stage:stage.stage,stageName:stage.name,stageProfile:stage.profile});}}return result.slice(0,options.limit||5);}
+function generateSharedSoundtrackV4(a,b,tracks,scoring,options={}){const focus=options.focus||'connection',type=options.relationshipType,trajectory=options.trajectory,target=buildPairTarget(a,b,type,trajectory,scoring,focus),arc=buildPairArc(a,b,type,trajectory,scoring,focus);const nonRomantic=NON_ROMANTIC_REL.has(type)&&trajectory!=='enemies_to_lovers';const tracksOut=rankArcV4(tracks,arc,scoring,{...options,nonRomantic,relationshipType:type,limit:options.limit||5});return{engineVersion:'v4',focus,relationshipType:type,trajectory,targetProfile:target,arc:arc.map(x=>({stage:x.stage,name:x.name,profile:x.profile})),tracks:tracksOut};}
+
+window.SoundtrackEngine={buildCharacterProfile,buildStoryProfile,buildRelationshipProfile,buildPairTarget,buildPairArc,generatePersonalSoundtrack,generateSharedSoundtrack:generateSharedSoundtrackV4,rankTracks,scoreTrack,normalizeProfile,generateSharedSoundtrackV4};
