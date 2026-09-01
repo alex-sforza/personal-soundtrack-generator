@@ -15,46 +15,20 @@
 <div class="sub">Новый генератор: персонаж, его история и отношения превращаются в музыкальную арку.</div>
 <div id="status" class="status">Загружаю библиотеку…</div>
 <div class="tabs"><button class="tab active" data-mode="single">Один персонаж</button><button class="tab" data-mode="pair">Пара персонажей</button></div>
-
 <section id="single" class="mode active">
 <div class="grid">
-<section class="card"><h2>Персонаж</h2>
-<div class="field"><label>Имя</label><input id="s-name" type="text" placeholder="Например, Марисабель"></div>
-<div class="field"><label>Раса</label><select id="s-race"></select></div>
-<div class="field"><label>Роль</label><select id="s-role"></select></div>
-<div class="field"><label>Сфера жизни</label><select id="s-sphere"></select></div>
-<div class="field"><label>Отправная точка</label><select id="s-start"></select></div>
-<div class="field"><label>Текущая линия</label><select id="s-current"></select></div>
-<div class="field"><label>Возможное будущее</label><select id="s-future"></select></div>
-</section>
+<section class="card"><h2>Персонаж</h2><div class="field"><label>Имя</label><input id="s-name" type="text" placeholder="Например, Марисабель"></div><div class="field"><label>Раса</label><select id="s-race"></select></div><div class="field"><label>Роль</label><select id="s-role"></select></div><div class="field"><label>Сфера жизни</label><select id="s-sphere"></select></div><div class="field"><label>Отправная точка</label><select id="s-start"></select></div><div class="field"><label>Текущая линия</label><select id="s-current"></select></div><div class="field"><label>Возможное будущее</label><select id="s-future"></select></div></section>
 <section class="card"><h2>Эмоциональный эквалайзер</h2><div id="single-eq" class="equalizer"></div></section>
 </div>
 <div id="single-visual"></div>
 <button id="single-run" class="primary" disabled>Сгенерировать саундтрек</button>
 <div id="single-out"></div>
 </section>
-
 <section id="pair" class="mode">
-<div class="pair-grid">
-<section class="card"><h2>Персонаж 1</h2><div id="p1-fields"></div><div class="pair-character-eq-source" aria-hidden="true"><div id="p1-eq" class="equalizer"></div></div></section>
-<section class="card"><h2>Персонаж 2</h2><div id="p2-fields"></div><div class="pair-character-eq-source" aria-hidden="true"><div id="p2-eq" class="equalizer"></div></div></section>
-</div>
-<div class="grid">
-<section class="card"><h2>Их отношения</h2>
-<div class="field"><label>Тип связи</label><select id="p-rel"></select></div>
-<div class="field"><label>Траектория</label><select id="p-traj"></select></div>
-<div class="field"><label>Фокус</label><select id="p-focus"><option value="connection">Они сами</option><option value="bond" selected>Их связь</option><option value="events">То, что с ними происходит</option><option value="conflict">Их конфликт</option></select></div>
-</section>
-<section class="card"><h2>Принцип</h2><p class="small">Связь не усредняет двух персонажей. Сначала строится отдельный профиль отношений, затем в него входят общие черты, контраст характеров и направление истории.</p><p class="small">Для не романтических связей действует защита от случайной романтизации: притяжение само по себе не превращается в любовь.</p><div id="pair-visual"></div></section>
-</div>
-<button id="pair-run" class="primary" disabled>Сгенерировать их историю</button>
-<div id="pair-out"></div>
+<div class="pair-grid"><section class="card"><h2>Персонаж 1</h2><div id="p1-fields"></div><div class="pair-character-eq-source" aria-hidden="true"><div id="p1-eq" class="equalizer"></div></div></section><section class="card"><h2>Персонаж 2</h2><div id="p2-fields"></div><div class="pair-character-eq-source" aria-hidden="true"><div id="p2-eq" class="equalizer"></div></div></section></div>
+<div class="grid"><section class="card"><h2>Их отношения</h2><div class="field"><label>Тип связи</label><select id="p-rel"></select></div><div class="field"><label>Траектория</label><select id="p-traj"></select></div><div class="field"><label>Фокус</label><select id="p-focus"><option value="connection">Они сами</option><option value="bond" selected>Их связь</option><option value="events">То, что с ними происходит</option><option value="conflict">Их конфликт</option></select></div></section><section class="card"><h2>Принцип</h2><p class="small">Связь не усредняет двух персонажей. Сначала строится отдельный профиль отношений, затем в него входят общие черты, контраст характеров и направление истории.</p><p class="small">Для не романтических связей действует защита от случайной романтизации: притяжение само по себе не превращается в любовь.</p><div id="pair-visual"></div></section></div>
+<button id="pair-run" class="primary" disabled>Сгенерировать их историю</button><div id="pair-out"></div>
 </section>
 </main>
-<script src="../js/soundtrack-engine.js"></script>
-<script src="app.js"></script>
-<script src="layout-v2.js"></script>
-<script src="layout-v3.js"></script>
-<script src="story-v4.js"></script>
-</body>
-</html>
+<script src="../js/soundtrack-engine.js"></script><script src="app.js"></script><script src="layout-v2.js"></script><script src="layout-v3.js"></script><script src="story-v5.js"></script>
+</body></html>
