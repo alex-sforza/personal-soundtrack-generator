@@ -41,7 +41,7 @@
 
   function mirror(id,value){const el=$(id);if(el){el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}}
 
-  function bindFile(buttonId,fileId){const b=$(buttonId),f=$(fileId);if(b&&!b.dataset.v3Bound){b.dataset.v3Bound='1';b.addEventListener('click',()=>f?.click());}}
+  function bindFile(button,fileId){if(button&&!button.dataset.v3Bound){button.dataset.v3Bound='1';button.addEventListener('click',()=>$(fileId)?.click());}}
 
   function buildSingle(){
     const host=$('single-visual'),eq=$('single-eq')?.closest('.card');
@@ -60,8 +60,8 @@
         <div class="v3-slot"><h4>Важная сцена</h4><input id="v3-s-img-3" type="url" placeholder="Ссылка на изображение"><button type="button" class="tab v3-upload" data-v3-file="s-img-file-3">Загрузить</button></div>
       </div></div>`;
     const pu=$('v3-s-portrait-url');pu?.addEventListener('input',()=>{mirror('s-portrait-url',pu.value);const p=$('v3-s-preview');p.innerHTML=pu.value.trim()?`<img src="${esc(pu.value.trim())}" alt="Портрет">`:'';});
-    bindFile('v3-s-portrait-file','s-portrait-file');
-    for(let i=0;i<4;i++){const u=$(`v3-s-img-${i}`);u?.addEventListener('input',()=>mirror(`s-img-url-${i}`,u.value));bindFile(`v3-s-img-${i}`.replace(`v3-s-img-${i}`,`v3-s-img-file-${i}`),`s-img-file-${i}`);}
+    bindFile($('v3-s-portrait-file'),'s-portrait-file');
+    for(let i=0;i<4;i++){const u=$(`v3-s-img-${i}`),b=document.querySelector(`[data-v3-file="s-img-file-${i}"]`);u?.addEventListener('input',()=>mirror(`s-img-url-${i}`,u.value));bindFile(b,`s-img-file-${i}`);}
   }
 
   function buildPair(){
@@ -80,9 +80,9 @@
         <div class="v3-slot"><h4>Важная сцена</h4><input id="v3-pair-img-3" type="url" placeholder="Ссылка на изображение"><button type="button" class="tab v3-upload" data-v3-file="p1-img-file-3">Загрузить</button></div>
       </div></div>`;
     for(const prefix of ['p1','p2']){
-      const u=$(`v3-${prefix}-portrait-url`),p=$(`v3-${prefix}-preview`);u?.addEventListener('input',()=>{mirror(`${prefix}-portrait-url`,u.value);p.innerHTML=u.value.trim()?`<img src="${esc(u.value.trim())}" alt="Портрет">`:'';});bindFile(`v3-${prefix}-portrait-file`,`${prefix}-portrait-file`);
+      const u=$(`v3-${prefix}-portrait-url`),p=$(`v3-${prefix}-preview`);u?.addEventListener('input',()=>{mirror(`${prefix}-portrait-url`,u.value);p.innerHTML=u.value.trim()?`<img src="${esc(u.value.trim())}" alt="Портрет">`:'';});bindFile($(`v3-${prefix}-portrait-file`),`${prefix}-portrait-file`);
     }
-    for(let i=0;i<4;i++){const u=$(`v3-pair-img-${i}`);u?.addEventListener('input',()=>mirror(`p1-img-url-${i}`,u.value));bindFile(`v3-pair-img-${i}`.replace(`v3-pair-img-${i}`,`v3-pair-file-${i}`),`p1-img-file-${i}`);}
+    for(let i=0;i<4;i++){const u=$(`v3-pair-img-${i}`),b=document.querySelector(`[data-v3-file="p1-img-file-${i}"]`);u?.addEventListener('input',()=>mirror(`p1-img-url-${i}`,u.value));bindFile(b,`p1-img-file-${i}`);}
   }
 
   function start(){
